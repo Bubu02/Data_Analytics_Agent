@@ -1,0 +1,4 @@
+# Core Backend Dependencies
+pandas>=2.0.0
+streamlit>=1.30.0
+crewai>=0.28.0
