@@ -1,13 +1,13 @@
-<!-- Homepage partial: main content + footer -->
-<div class="flex-1 flex flex-col relative overflow-y-auto">
+<!-- Homepage partial: hero section (footer is persistent in shell) -->
+<div class="flex-1 flex flex-col relative">
   <!-- Background dot grid overlay -->
   <div class="fixed inset-0 dot-grid pointer-events-none z-0"></div>
 
   <!-- Hero Section -->
-  <main class="flex-grow flex items-center relative z-10 w-full overflow-hidden min-h-[calc(100vh-160px)]">
-    <div class="max-w-[1280px] mx-auto px-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-center relative">
+  <main class="flex-grow flex items-center relative z-10 w-full overflow-hidden py-16 md:py-20">
+    <div class="max-w-[1280px] mx-auto px-16 md:px-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center relative">
       <!-- Left Text Content -->
-      <div class="flex flex-col gap-6 z-20 py-12 md:py-24">
+      <div class="flex flex-col gap-6 z-20 py-8 md:py-12">
         <div class="w-8 h-8 border-l border-t border-panel-border absolute top-12 left-20 hidden lg:block"></div>
         <h1 class="font-display-xl-mobile text-display-xl-mobile md:font-display-xl md:text-display-xl text-primary max-w-2xl">
           ANALYTICA AI.<br />
@@ -40,23 +40,4 @@
       </div>
     </div>
   </main>
-
-  <!-- Footer -->
-  <footer class="w-full relative z-20 border-t border-panel-border" style="background-color:rgb(0,0,0)">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 py-12 px-20 max-w-[1280px] mx-auto w-full">
-      <div class="flex flex-col gap-4">
-        <div class="font-headline-md text-headline-md font-bold text-primary">ANALYTICA AI</div>
-        <p class="font-label-mono text-label-mono-caps text-on-surface-variant uppercase">
-          &copy; 2024 ANALYTICA AI. ALL RIGHTS RESERVED.
-        </p>
-      </div>
-      <nav class="flex flex-wrap md:justify-end gap-x-8 gap-y-4 font-label-mono text-label-mono-caps uppercase items-center">
-        <a class="text-outline hover:text-primary transition-colors" href="#">Documentation</a>
-        <a class="text-outline hover:text-primary transition-colors" href="#">Privacy Policy</a>
-        <a class="text-outline hover:text-primary transition-colors" href="#">Terms of Service</a>
-        <a class="text-outline hover:text-primary transition-colors" href="#">Status</a>
-        <a class="text-outline hover:text-primary transition-colors" href="#">Contact</a>
-      </nav>
-    </div>
-  </footer>
 </div>
