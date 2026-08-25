@@ -1,0 +1,136 @@
+<!-- Populated Workspace partial -->
+<div class="flex flex-1 relative bg-dot-pattern" style="background-color:rgb(0,0,0); min-height:calc(100vh - 3rem)">
+  <main class="flex-1 p-gutter md:p-margin-desktop grid grid-cols-1 md:grid-cols-12 gap-gutter md:gap-[16px]">
+
+    <!-- Zone 1: Data Preview Table -->
+    <section class="md:col-span-4 border-ghost p-4 flex flex-col h-[819px]">
+      <div class="flex justify-between items-center mb-6 pb-2 border-b border-outline-variant">
+        <h2 class="font-label-mono text-label-mono uppercase tracking-widest text-primary">Raw Data Ingestion</h2>
+        <span class="px-2 py-1 border border-outline-variant font-label-mono text-[10px] text-on-surface-variant">LIVE STREAM</span>
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        <table class="w-full text-left font-label-mono text-[11px] text-on-surface-variant">
+          <thead class="sticky top-0 z-10 border-b border-[#333333] bg-black">
+            <tr>
+              <th class="py-2 font-normal">TIMESTAMP</th>
+              <th class="py-2 font-normal">NODE_ID</th>
+              <th class="py-2 font-normal">METRIC_VAL</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#222]">
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:01.001</td>
+              <td class="py-2">ND-77A</td>
+              <td class="py-2">0.9982</td>
+            </tr>
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:01.054</td>
+              <td class="py-2">ND-22B</td>
+              <td class="py-2">0.8411</td>
+            </tr>
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:02.110</td>
+              <td class="py-2">ND-77A</td>
+              <td class="py-2">0.9991</td>
+            </tr>
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:02.890</td>
+              <td class="py-2">ND-88X</td>
+              <td class="py-2 text-error">0.4012</td>
+            </tr>
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:03.001</td>
+              <td class="py-2">ND-77A</td>
+              <td class="py-2">0.9985</td>
+            </tr>
+            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+              <td class="py-2 text-primary group-hover:text-primary">16:42:04.221</td>
+              <td class="py-2">ND-11C</td>
+              <td class="py-2">0.9100</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Zone 2: Visualizations -->
+    <section class="md:col-span-5 flex flex-col gap-gutter h-[819px]">
+      <!-- Line Graph -->
+      <div class="border-ghost p-4 flex-1 flex flex-col relative overflow-hidden">
+        <div class="flex justify-between items-center mb-4 z-10">
+          <h2 class="font-label-mono text-label-mono uppercase tracking-widest text-primary">System Anomaly Index</h2>
+          <span class="material-symbols-outlined text-on-surface-variant text-[16px]">show_chart</span>
+        </div>
+        <div class="flex-1 w-full relative flex items-end border-b border-l border-[#333] pl-2 pb-2">
+          <div class="absolute left-[-20px] top-0 bottom-0 flex flex-col justify-between text-[9px] font-label-mono text-[#555] py-2">
+            <span>1.0</span><span>0.5</span><span>0.0</span>
+          </div>
+          <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <line stroke="#222" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="25" y2="25"></line>
+            <line stroke="#222" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="50" y2="50"></line>
+            <line stroke="#222" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="75" y2="75"></line>
+            <polyline fill="none" points="0,80 10,75 20,85 30,60 40,65 50,20 60,30 70,10 80,40 90,80 100,75" stroke="#fff" stroke-width="1.5"></polyline>
+            <circle cx="70" cy="10" fill="#fff" r="2"></circle>
+            <circle cx="70" cy="10" fill="none" opacity="0.5" r="6" stroke="#fff" stroke-width="0.5"></circle>
+          </svg>
+        </div>
+      </div>
+      <!-- Bar Chart -->
+      <div class="border-ghost p-4 flex-1 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-label-mono text-label-mono uppercase tracking-widest text-primary">Throughput Capacity</h2>
+          <span class="material-symbols-outlined text-on-surface-variant text-[16px]">bar_chart</span>
+        </div>
+        <div class="flex-1 flex items-end justify-between gap-1 border-b border-[#333] pb-1">
+          <div class="w-full bg-[#333] h-[20%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">20</span></div>
+          <div class="w-full bg-[#333] h-[40%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">40</span></div>
+          <div class="w-full bg-[#555] h-[80%] hover:bg-primary hover:opacity-80 transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block text-primary">80</span></div>
+          <div class="w-full bg-[#333] h-[60%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">60</span></div>
+          <div class="w-full bg-[#333] h-[30%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">30</span></div>
+          <div class="w-full bg-[#333] h-[50%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">50</span></div>
+          <div class="w-full bg-[#fff] h-[95%] hover:opacity-80 transition-opacity relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block text-black bg-white px-1 rounded-sm">95</span></div>
+          <div class="w-full bg-[#333] h-[45%] hover:bg-[#555] transition-colors relative group"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-label-mono hidden group-hover:block">45</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Zone 3: AI Analyst Chat -->
+    <section class="md:col-span-3 border-ghost flex flex-col h-[819px]">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[18px]">smart_toy</span>
+          <h2 class="font-label-mono text-label-mono uppercase tracking-widest text-primary">Oracle AI</h2>
+        </div>
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+      </div>
+      <div class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 font-body-sm text-body-sm">
+        <div class="self-end max-w-[85%] border border-[#333] p-3 rounded-bl-lg rounded-tl-lg rounded-tr-lg">
+          <p class="text-on-surface-variant">Analyze the anomaly spike at 16:42:02.</p>
+        </div>
+        <div class="self-start max-w-[95%] border border-[#444] bg-[#1a1a1a] p-3 rounded-br-lg rounded-tr-lg rounded-tl-lg font-label-mono text-[11px] leading-relaxed">
+          <p class="text-primary mb-2">&gt;&gt; ANALYSIS COMPLETE</p>
+          <p class="text-on-surface-variant mb-2">Spike correlated with Node ND-88X failure event.</p>
+          <ul class="list-none space-y-1 pl-2 border-l border-[#444]">
+            <li>- Expected variance: &lt; 0.1</li>
+            <li>- Actual variance: 0.598</li>
+            <li>- Confidence: 99.2%</li>
+          </ul>
+        </div>
+      </div>
+      <div class="p-4 border-t border-outline-variant">
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[16px]">terminal</span>
+          <input
+            class="w-full bg-transparent border border-[#333] text-primary font-label-mono text-[12px] py-2 pl-10 pr-10 focus:outline-none focus:border-primary transition-colors placeholder:text-[#555]"
+            placeholder="Query dataset..."
+            type="text"
+          />
+          <button class="absolute right-3 text-primary hover:opacity-70 transition-opacity">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>

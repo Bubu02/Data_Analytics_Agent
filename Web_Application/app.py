@@ -9,7 +9,7 @@ import uvicorn
 
 # Initialize FastAPI App
 app = FastAPI(
-    title="Stitch AI Data Workspace",
+    title="Analytica AI",
     description="Precision Analytics Engine & Multi-Agent Workspace powered by FastAPI",
     version="1.0.0",
     docs_url="/docs",
@@ -28,37 +28,78 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 # =====================================================================
-# PAGE ROUTES (HTML VIEWS)
+# PAGE ROUTES (HTML VIEWS) — All served via the persistent layout shell.
+# The shell renders the initial page content server-side (no flash), then
+# subsequent navigation swaps only the #page-content div client-side.
 # =====================================================================
 
-@app.get("/", response_class=HTMLResponse, summary="Master Workspace Hub")
+@app.get("/", response_class=HTMLResponse, summary="Root redirect")
 async def read_root(request: Request):
-    """Renders the master workspace hub with interactive dashboard viewport tabs."""
-    return templates.TemplateResponse(request=request, name="index.html")
+    """Redirects root URL to the homepage."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/homepage", status_code=302)
 
 
-@app.get("/homepage", response_class=HTMLResponse, summary="Analytica AI Homepage (16:9)")
+@app.get("/homepage", response_class=HTMLResponse, summary="Analytica AI Homepage")
 async def read_homepage(request: Request):
-    """Renders Dashboard 1: Technical Noir Homepage Landing."""
-    return templates.TemplateResponse(request=request, name="homepage.html")
+    """Renders the shell with Homepage as the initial content (SSR first load)."""
+    return templates.TemplateResponse(
+        request=request, name="shell.html", context={"initial_page": "homepage"}
+    )
 
 
 @app.get("/onboarding", response_class=HTMLResponse, summary="Dataset Connection & Onboarding")
 async def read_onboarding(request: Request):
-    """Renders Dashboard 2: Connect Dataset & Drag-and-Drop Ingestion."""
-    return templates.TemplateResponse(request=request, name="onboarding_upload.html")
+    """Renders the shell with Onboarding as the initial content (SSR first load)."""
+    return templates.TemplateResponse(
+        request=request, name="shell.html", context={"initial_page": "onboarding"}
+    )
 
 
 @app.get("/workspace-empty", response_class=HTMLResponse, summary="Empty Workspace & AI Copilot")
 async def read_workspace_empty(request: Request):
-    """Renders Dashboard 3: Empty Workspace with Analytica Copilot."""
-    return templates.TemplateResponse(request=request, name="workspace_empty.html")
+    """Renders the shell with Empty Workspace as the initial content (SSR first load)."""
+    return templates.TemplateResponse(
+        request=request, name="shell.html", context={"initial_page": "workspace-empty"}
+    )
 
 
 @app.get("/workspace-populated", response_class=HTMLResponse, summary="Populated Analytics Workspace")
 async def read_workspace_populated(request: Request):
-    """Renders Dashboard 4: Full Analytics Dashboard with Models & KPIs."""
-    return templates.TemplateResponse(request=request, name="workspace_populated.html")
+    """Renders the shell with Populated Workspace as the initial content (SSR first load)."""
+    return templates.TemplateResponse(
+        request=request, name="shell.html", context={"initial_page": "workspace-populated"}
+    )
+
+
+# =====================================================================
+# PARTIAL ROUTES — Return only the inner content HTML fragment.
+# Called by the client-side router when navigating between pages.
+# The nav and sidebar are NOT included — only the #page-content area.
+# =====================================================================
+
+@app.get("/partial/homepage", response_class=HTMLResponse, summary="Homepage content fragment")
+async def partial_homepage(request: Request):
+    """Returns only the homepage content HTML (no shell) for client-side routing."""
+    return templates.TemplateResponse(request=request, name="partials/homepage.html")
+
+
+@app.get("/partial/onboarding", response_class=HTMLResponse, summary="Onboarding content fragment")
+async def partial_onboarding(request: Request):
+    """Returns only the onboarding content HTML (no shell) for client-side routing."""
+    return templates.TemplateResponse(request=request, name="partials/onboarding.html")
+
+
+@app.get("/partial/workspace-empty", response_class=HTMLResponse, summary="Empty workspace content fragment")
+async def partial_workspace_empty(request: Request):
+    """Returns only the empty workspace content HTML (no shell) for client-side routing."""
+    return templates.TemplateResponse(request=request, name="partials/workspace-empty.html")
+
+
+@app.get("/partial/workspace-populated", response_class=HTMLResponse, summary="Populated workspace content fragment")
+async def partial_workspace_populated(request: Request):
+    """Returns only the populated workspace content HTML (no shell) for client-side routing."""
+    return templates.TemplateResponse(request=request, name="partials/workspace-populated.html")
 
 
 # =====================================================================

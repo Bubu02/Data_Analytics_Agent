@@ -1,0 +1,282 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Analytica AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#353535",
+              "secondary-fixed-dim": "#c8c6c5",
+              surface: "#131313",
+              "on-tertiary-fixed-variant": "#464747",
+              background: "#131313",
+              "outline-variant": "#444748",
+              "surface-bright": "#393939",
+              "on-primary-container": "#636565",
+              tertiary: "#ffffff",
+              "tertiary-container": "#e3e2e2",
+              "on-tertiary": "#303031",
+              "on-tertiary-fixed": "#1b1c1c",
+              "on-error": "#690005",
+              "on-primary-fixed": "#1a1c1c",
+              outline: "#8e9192",
+              "on-secondary": "#313030",
+              "primary-fixed-dim": "#c6c6c7",
+              "surface-container": "#1f1f1f",
+              "tertiary-fixed": "#e3e2e2",
+              "on-surface-variant": "#c4c7c8",
+              "surface-container-low": "#1b1b1b",
+              "surface-dim": "#131313",
+              "inverse-primary": "#5d5f5f",
+              secondary: "#c8c6c5",
+              "on-tertiary-container": "#646464",
+              "on-secondary-fixed": "#1c1b1b",
+              "primary-container": "#e2e2e2",
+              "surface-container-high": "#2a2a2a",
+              "primary-fixed": "#e2e2e2",
+              "surface-container-lowest": "#0e0e0e",
+              "error-container": "#93000a",
+              "inverse-on-surface": "#303030",
+              "surface-container-highest": "#353535",
+              "on-primary-fixed-variant": "#454747",
+              "secondary-container": "#474746",
+              "surface-tint": "#c6c6c7",
+              error: "#ffb4ab",
+              "on-secondary-fixed-variant": "#474746",
+              "on-surface": "#e2e2e2",
+              "tertiary-fixed-dim": "#c7c6c6",
+              primary: "#ffffff",
+              "inverse-surface": "#e2e2e2",
+              "on-error-container": "#ffdad6",
+              "on-background": "#e2e2e2",
+              "secondary-fixed": "#e5e2e1",
+              "on-primary": "#2f3131",
+              "on-secondary-container": "#b7b5b4",
+              "data-gray": "#888888",
+              "grid-dot": "#333333",
+              "panel-border": "#222222",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "container-max": "1280px",
+              "margin-desktop": "64px",
+              "margin-desktop-lg": "80px",
+              "margin-tablet": "40px",
+              gutter: "16px",
+              "gutter-lg": "24px",
+              "margin-mobile": "20px",
+              unit: "4px",
+            },
+            fontFamily: {
+              "body-lg": ["Hanken Grotesk"],
+              "display-lg-mobile": ["Hanken Grotesk"],
+              "display-lg": ["Hanken Grotesk"],
+              "headline-md": ["Hanken Grotesk"],
+              "headline-lg": ["Hanken Grotesk"],
+              "body-sm": ["Hanken Grotesk"],
+              "label-mono": ["JetBrains Mono"],
+              "label-mono-caps": ["JetBrains Mono"],
+              "display-xl": ["Hanken Grotesk"],
+              "display-xl-mobile": ["Hanken Grotesk"],
+            },
+            fontSize: {
+              "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "0.01em", fontWeight: "400" }],
+              "display-lg-mobile": ["40px", { lineHeight: "48px", letterSpacing: "-0.01em", fontWeight: "600" }],
+              "display-lg": ["72px", { lineHeight: "80px", letterSpacing: "-0.02em", fontWeight: "600" }],
+              "display-xl": ["80px", { lineHeight: "88px", letterSpacing: "-0.04em", fontWeight: "700" }],
+              "display-xl-mobile": ["48px", { lineHeight: "52px", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "headline-md": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+              "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "600" }],
+              "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+              "label-mono": ["12px", { lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "500" }],
+              "label-mono-caps": ["10px", { lineHeight: "12px", letterSpacing: "0.2em", fontWeight: "700" }],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .dot-grid { background-image: radial-gradient(circle at 1px 1px, #222222 1px, transparent 0); background-size: 24px 24px; }
+      .dot-pattern { background-image: radial-gradient(#333333 1px, transparent 1px); background-size: 16px 16px; }
+      .bg-dot-pattern { background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 16px 16px; }
+      .grid-bg { background-image: linear-gradient(to right, #222 1px, transparent 1px), linear-gradient(to bottom, #222 1px, transparent 1px); background-size: 64px 64px; }
+      .upload-dashed { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%23333333' stroke-width='2' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 8px; }
+      .border-ghost { border: 1px solid #333333; }
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: #131313; }
+      ::-webkit-scrollbar-thumb { background: #333333; }
+      ::-webkit-scrollbar-thumb:hover { background: #555555; }
+      #page-content { transition: opacity 0.15s ease; }
+      #page-content.is-loading { opacity: 0; pointer-events: none; }
+      .side-nav-link.is-active { background-color: #ffffff !important; color: #2f3131 !important; }
+      .top-nav-link.is-active { color: #ffffff; border-bottom: 1px solid #ffffff; padding-bottom: 4px; }
+    </style>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body class="bg-black text-on-surface min-h-screen flex overflow-hidden font-body-lg antialiased" style="background-color:rgb(0,0,0)">
+
+    <!-- PERSISTENT SIDE NAV -->
+    <nav id="side-nav" class="border-r border-outline-variant h-screen w-16 fixed left-0 top-0 flex flex-col items-center py-8 space-y-6 z-50" style="background-color:rgb(0,0,0)">
+      <div class="mb-8 flex flex-col items-center group cursor-pointer">
+        <div class="w-10 h-10 border border-outline-variant flex items-center justify-center rounded mb-2 group-hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">analytics</span>
+        </div>
+      </div>
+      <div class="flex-1 flex flex-col space-y-4 w-full px-2">
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="homepage" href="/homepage" title="Homepage">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">grid_view</span>
+        </a>
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="onboarding" href="/onboarding" title="Connect Data">
+          <span class="material-symbols-outlined">database</span>
+        </a>
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="workspace-empty" href="/workspace-empty" title="Empty Workspace">
+          <span class="material-symbols-outlined">cloud_download</span>
+        </a>
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="workspace-populated" href="/workspace-populated" title="Analytics Workspace">
+          <span class="material-symbols-outlined">terminal</span>
+        </a>
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" href="#" title="Archive">
+          <span class="material-symbols-outlined">archive</span>
+        </a>
+      </div>
+      <div class="flex flex-col space-y-4 w-full px-2 mt-auto">
+        <a class="w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" href="#" title="Help">
+          <span class="material-symbols-outlined">help_outline</span>
+        </a>
+        <a class="w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" href="#" title="Logout">
+          <span class="material-symbols-outlined">logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 ml-16 flex flex-col">
+
+      <!-- PERSISTENT TOP NAV -->
+      <header id="top-nav" class="w-full h-12 top-0 sticky border-b border-outline-variant flex justify-between items-center px-16 z-40" style="background-color:rgb(27,27,27)">
+        <div class="flex items-center gap-4">
+          <span class="font-label-mono text-label-mono tracking-widest text-primary uppercase">ANALYTICA AI</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-6">
+          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="homepage" href="/homepage">1. Homepage</a>
+          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="onboarding" href="/onboarding">2. Connect Data</a>
+          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-empty" href="/workspace-empty">3. Empty Workspace</a>
+          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-populated" href="/workspace-populated">4. Populated Workspace</a>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50">
+            <span class="material-symbols-outlined text-[20px]">search</span>
+          </button>
+          <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+          </button>
+          <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50 relative">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            <span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT — only this div swaps on navigation -->
+      <div id="page-content" class="flex-1 flex flex-col overflow-hidden">
+        {% include "partials/" + initial_page + ".html" %}
+      </div>
+
+    </div>
+
+    <!-- CLIENT-SIDE ROUTER -->
+    <script>
+      (() => {
+        const ROUTES = {
+          '/homepage':            'homepage',
+          '/onboarding':          'onboarding',
+          '/workspace-empty':     'workspace-empty',
+          '/workspace-populated': 'workspace-populated',
+        };
+        const PAGE_TITLES = {
+          'homepage':            'Analytica AI - Homepage',
+          'onboarding':          'Analytica AI - Connect Dataset',
+          'workspace-empty':     'Analytica AI - Empty Workspace',
+          'workspace-populated': 'Analytica AI - Analytics Workspace',
+        };
+        const contentEl = document.getElementById('page-content');
+
+        function setActiveStates(page) {
+          document.querySelectorAll('.side-nav-link[data-page]').forEach(el => {
+            el.classList.toggle('is-active', el.dataset.page === page);
+          });
+          document.querySelectorAll('.top-nav-link[data-page]').forEach(el => {
+            el.classList.toggle('is-active', el.dataset.page === page);
+          });
+        }
+
+        function execScripts(container) {
+          container.querySelectorAll('script').forEach(old => {
+            const s = document.createElement('script');
+            [...old.attributes].forEach(a => s.setAttribute(a.name, a.value));
+            s.textContent = old.textContent;
+            old.replaceWith(s);
+          });
+        }
+
+        async function navigate(url, pushState = true) {
+          const page = ROUTES[url];
+          if (!page) { window.location.href = url; return; }
+
+          try {
+            contentEl.classList.add('is-loading');
+            const res = await fetch('/partial/' + page, {
+              headers: { 'X-Partial-Request': '1' },
+              cache: 'no-store',
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const html = await res.text();
+
+            await new Promise(r => setTimeout(r, 150));
+            contentEl.innerHTML = html;
+            execScripts(contentEl);
+            contentEl.classList.remove('is-loading');
+
+            if (pushState) history.pushState({ page, url }, '', url);
+            document.title = PAGE_TITLES[page] || 'Analytica AI';
+            setActiveStates(page);
+          } catch (err) {
+            console.error('[Router] falling back:', err);
+            contentEl.classList.remove('is-loading');
+            window.location.href = url;
+          }
+        }
+
+        document.addEventListener('click', e => {
+          const link = e.target.closest('a[href]');
+          if (!link) return;
+          const href = link.getAttribute('href');
+          if (!href || href.startsWith('#') || href.startsWith('http') || !(href in ROUTES)) return;
+          e.preventDefault();
+          navigate(href);
+        });
+
+        window.addEventListener('popstate', e => {
+          if (e.state?.url) navigate(e.state.url, false);
+        });
+
+        const initialPage = ROUTES[window.location.pathname] || 'homepage';
+        setActiveStates(initialPage);
+        history.replaceState({ page: initialPage, url: window.location.pathname }, '', window.location.pathname);
+      })();
+    </script>
+  </body>
+</html>

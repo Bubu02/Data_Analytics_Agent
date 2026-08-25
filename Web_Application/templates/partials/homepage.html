@@ -1,0 +1,62 @@
+<!-- Homepage partial: main content + footer -->
+<div class="flex-1 flex flex-col relative overflow-y-auto">
+  <!-- Background dot grid overlay -->
+  <div class="fixed inset-0 dot-grid pointer-events-none z-0"></div>
+
+  <!-- Hero Section -->
+  <main class="flex-grow flex items-center relative z-10 w-full overflow-hidden min-h-[calc(100vh-160px)]">
+    <div class="max-w-[1280px] mx-auto px-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-center relative">
+      <!-- Left Text Content -->
+      <div class="flex flex-col gap-6 z-20 py-12 md:py-24">
+        <div class="w-8 h-8 border-l border-t border-panel-border absolute top-12 left-20 hidden lg:block"></div>
+        <h1 class="font-display-xl-mobile text-display-xl-mobile md:font-display-xl md:text-display-xl text-primary max-w-2xl">
+          ANALYTICA AI.<br />
+          <span class="text-data-gray">Data analysis, redefined.</span>
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+          Build, launch, and scale intelligent data models without writing a
+          single line of code. High-fidelity insights for technical teams.
+        </p>
+        <div class="flex flex-wrap items-center gap-4 mt-4">
+          <button class="font-label-mono-caps text-label-mono-caps bg-primary text-on-primary px-8 py-4 uppercase tracking-widest hover:bg-surface-tint transition-colors">
+            Get Started
+          </button>
+          <button class="font-label-mono-caps text-label-mono-caps border border-primary text-primary px-8 py-4 uppercase tracking-widest hover:bg-surface-container-low transition-colors">
+            View Demo
+          </button>
+        </div>
+        <div class="w-8 h-8 border-r border-b border-panel-border absolute bottom-12 right-[50%] hidden lg:block"></div>
+      </div>
+      <!-- Right Visual Graphic -->
+      <div class="relative h-[400px] lg:h-[600px] w-full flex items-center justify-center border border-panel-border bg-surface-container-lowest overflow-hidden">
+        <div
+          class="absolute inset-0 bg-cover bg-center mix-blend-screen opacity-80"
+          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAQ809jEOugnp7vYtyuUY-2Mpt6SVY4QIVenGl-c8BeIPNqCleVmdd4t9Dj3XjOEBvNIUO2J1ssKuCyIUt6dEHjxExcxqo9xD5c4IpyL-mezobaLIYpwF-3KkMPXCW4alo1Cqm6mtC2zD56AOvWMSn0dMwC5jTANQfVX1vYU-_dvefIKvr0OTlxZNV0o2vU0_hpaOb8SPYBh3mVE7Pm64gwiRoQoQYwfnuCib8cwnOYX4F3GEMra6cn');"
+        ></div>
+        <div class="absolute top-4 left-4 w-4 h-4 border-l border-t border-outline-variant"></div>
+        <div class="absolute top-4 right-4 w-4 h-4 border-r border-t border-outline-variant"></div>
+        <div class="absolute bottom-4 left-4 w-4 h-4 border-l border-b border-outline-variant"></div>
+        <div class="absolute bottom-4 right-4 w-4 h-4 border-r border-b border-outline-variant"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full relative z-20 border-t border-panel-border" style="background-color:rgb(0,0,0)">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 py-12 px-20 max-w-[1280px] mx-auto w-full">
+      <div class="flex flex-col gap-4">
+        <div class="font-headline-md text-headline-md font-bold text-primary">ANALYTICA AI</div>
+        <p class="font-label-mono text-label-mono-caps text-on-surface-variant uppercase">
+          &copy; 2024 ANALYTICA AI. ALL RIGHTS RESERVED.
+        </p>
+      </div>
+      <nav class="flex flex-wrap md:justify-end gap-x-8 gap-y-4 font-label-mono text-label-mono-caps uppercase items-center">
+        <a class="text-outline hover:text-primary transition-colors" href="#">Documentation</a>
+        <a class="text-outline hover:text-primary transition-colors" href="#">Privacy Policy</a>
+        <a class="text-outline hover:text-primary transition-colors" href="#">Terms of Service</a>
+        <a class="text-outline hover:text-primary transition-colors" href="#">Status</a>
+        <a class="text-outline hover:text-primary transition-colors" href="#">Contact</a>
+      </nav>
+    </div>
+  </footer>
+</div>

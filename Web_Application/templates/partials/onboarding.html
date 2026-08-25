@@ -1,0 +1,71 @@
+<!-- Onboarding / Connect Dataset partial -->
+<div class="flex-1 flex flex-col relative dot-pattern overflow-y-auto" style="background-color:rgb(0,0,0)">
+  <!-- Structural grid overlay (subtle) -->
+  <div class="fixed inset-0 pointer-events-none z-0 hidden md:flex justify-center opacity-20">
+    <div class="w-full max-w-[1280px] px-16 h-full grid grid-cols-12 gap-4">
+      <div class="border-l border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+      <div class="border-r border-[#333333] h-full col-span-1"></div>
+    </div>
+  </div>
+
+  <main class="flex-grow flex items-center justify-center p-20 relative z-10">
+    <div class="max-w-2xl w-full flex flex-col items-center">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 border border-surface-variant rounded-full mb-6 bg-surface-container/50 backdrop-blur-sm">
+          <span class="material-symbols-outlined text-sm text-primary">data_object</span>
+          <span class="font-label-mono text-label-mono text-primary uppercase">Workspace Initialization</span>
+        </div>
+        <h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-4">
+          Connect your First Dataset
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">
+          Upload CSV, JSON, or connect directly to your data warehouse to
+          begin model training.
+        </p>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="w-full bg-surface-container-lowest/80 backdrop-blur-xl border border-surface-variant p-8 rounded-lg shadow-2xl" style="border-color: rgb(255,255,255)">
+        <div class="upload-dashed w-full h-64 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-surface-container-low transition-colors group relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+          <div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md text-primary mb-2">Drag &amp; Drop Files</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">or click to browse local files</p>
+          <p class="font-label-mono text-label-mono text-outline mt-4 uppercase">Max 500MB &bull; CSV, JSON, Parquet</p>
+        </div>
+        <div class="flex items-center w-full my-6">
+          <div class="flex-grow border-t border-surface-variant"></div>
+          <span class="px-4 font-label-mono text-label-mono text-on-surface-variant uppercase bg-surface-container-lowest">OR CONNECT</span>
+          <div class="flex-grow border-t border-surface-variant"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button class="flex items-center justify-center space-x-3 p-4 border border-surface-variant rounded hover:border-primary transition-colors bg-surface-container text-primary font-label-mono text-label-mono uppercase">
+            <span class="material-symbols-outlined">database</span>
+            <span>PostgreSQL</span>
+          </button>
+          <button class="flex items-center justify-center space-x-3 p-4 border border-surface-variant rounded hover:border-primary transition-colors bg-surface-container text-primary font-label-mono text-label-mono uppercase">
+            <span class="material-symbols-outlined">storage</span>
+            <span>Snowflake</span>
+          </button>
+        </div>
+        <div class="mt-8 flex justify-end space-x-4">
+          <button class="px-6 py-3 border border-surface-variant text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary hover:border-outline transition-colors rounded">
+            Skip for Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
