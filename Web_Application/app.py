@@ -1,11 +1,15 @@
 import os
 import sys
+import io
 from typing import Optional
+import pandas as pd
 from fastapi import FastAPI, Request, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
+
+import analytics_engine
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -15,6 +19,13 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Global state for the active dataset (In a real app, use a database or cache)
+class GlobalState:
+    df: Optional[pd.DataFrame] = None
+    filename: Optional[str] = None
+
+state = GlobalState()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -120,39 +131,81 @@ async def health_check():
 @app.get("/api/v1/dataset/metrics", summary="Get Active Dataset Metrics")
 async def get_dataset_metrics():
     """Returns high-density telemetry metrics for the active dataset."""
+    if state.df is None:
+        return {
+            "total_rows": 0,
+            "total_columns": 0,
+            "missing_data_pct": 0,
+            "quality_score": 0,
+            "memory_allocation_mb": 0,
+            "health_status": "No Dataset",
+            "numerical_features": 0,
+            "categorical_features": 0
+        }
+
+    df = state.df
+    total_cells = df.size
+    missing_cells = df.isnull().sum().sum()
+    missing_pct = round((missing_cells / total_cells) * 100, 2) if total_cells > 0 else 0
+    
+    num_cols = df.select_dtypes(include="number").columns.tolist()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+
     return {
-        "total_rows": 12450,
-        "total_columns": 18,
-        "missing_data_pct": 0.4,
-        "quality_score": 96,
-        "memory_allocation_mb": 1.8,
-        "health_status": "Optimal",
-        "numerical_features": 8,
-        "categorical_features": 10
+        "total_rows": len(df),
+        "total_columns": len(df.columns),
+        "missing_data_pct": missing_pct,
+        "quality_score": 100 - int(missing_pct),
+        "memory_allocation_mb": round(df.memory_usage(deep=True).sum() / (1024 * 1024), 2),
+        "health_status": "Optimal" if missing_pct < 5 else "Degraded",
+        "numerical_features": len(num_cols),
+        "categorical_features": len(cat_cols)
     }
 
 
 @app.post("/api/v1/dataset/upload", summary="Upload Dataset File")
 async def upload_dataset(file: UploadFile = File(...)):
-    """Receives and validates dataset files (CSV, JSON, Parquet)."""
-    allowed_extensions = {".csv", ".json", ".parquet"}
-    filename = file.filename or "dataset"
+    """Receives and validates dataset files (CSV)."""
+    allowed_extensions = {".csv"}
+    filename = file.filename or "dataset.csv"
     ext = os.path.splitext(filename)[1].lower()
 
     if ext not in allowed_extensions:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file format '{ext}'. Allowed formats: CSV, JSON, Parquet."
+            detail=f"Unsupported file format '{ext}'. Only CSV is supported for now."
         )
 
     content = await file.read()
-    file_size_kb = round(len(content) / 1024, 2)
+    
+    try:
+        df = pd.read_csv(io.BytesIO(content))
+        state.df = df
+        state.filename = filename
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
 
     return {
         "status": "success",
         "filename": filename,
-        "size_kb": file_size_kb,
-        "message": f"Dataset '{filename}' successfully ingested into Precision Engine."
+        "rows": len(df),
+        "columns": len(df.columns),
+        "message": f"Dataset '{filename}' successfully ingested."
+    }
+
+
+@app.get("/api/v1/dataset/preview", summary="Get Dataset Preview")
+async def get_dataset_preview():
+    """Returns the first 50 rows of the active dataset."""
+    if state.df is None:
+        return {"data": [], "columns": []}
+    
+    # Convert NaNs to None for JSON serialization
+    preview_df = state.df.head(50).where(pd.notnull(state.df), None)
+    
+    return {
+        "data": preview_df.to_dict(orient="records"),
+        "columns": state.df.columns.tolist()
     }
 
 
@@ -160,15 +213,37 @@ async def upload_dataset(file: UploadFile = File(...)):
 async def copilot_chat(query: dict):
     """Process natural language queries for automated insights."""
     user_message = query.get("message", "").strip()
+    api_key = query.get("api_key", "").strip() or os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()
+    model = query.get("model", "gemini-2.5-flash").strip()
+
     if not user_message:
         raise HTTPException(status_code=400, detail="Query message cannot be empty.")
 
-    return {
-        "query": user_message,
-        "response": f"Analytica Copilot processed: '{user_message}'. Analysis shows positive revenue trajectory in North America with 96% confidence.",
-        "confidence": 0.96,
-        "suggested_actions": ["Filter by Region", "Export Feature Correlations", "Run Churn Prediction Model"]
-    }
+    if state.df is None:
+        return {
+            "query": user_message,
+            "response": "⚠️ No active dataset loaded. Please upload a dataset on the **Connect Data** page to begin analysis.",
+            "status": "warning"
+        }
+
+    try:
+        response = analytics_engine.route_query(
+            df=state.df,
+            api_key=api_key,
+            prompt=user_message,
+            model_name=model
+        )
+        return {
+            "query": user_message,
+            "response": response,
+            "status": "success"
+        }
+    except Exception as e:
+        return {
+            "query": user_message,
+            "response": f"I encountered an error: {str(e)}",
+            "status": "error"
+        }
 
 
 # =====================================================================

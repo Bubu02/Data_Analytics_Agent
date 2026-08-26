@@ -1,175 +1,286 @@
-// Stitch AI Data Workspace - Precision Engine JS Engine
+/**
+ * Analytica AI — Client Application Script
+ * Handles settings persistence, dataset uploads, live table rendering,
+ * and multi-agent copilot chat interaction.
+ */
 
-document.addEventListener('DOMContentLoaded', () => {
-  initTabNavigation();
-  initCorrelationCanvas();
-  initDistributionCanvas();
-  initLogStreamer();
-});
+(() => {
+  // -------------------------------------------------------------------
+  // 1. SETTINGS & LOCAL STORAGE
+  // -------------------------------------------------------------------
+  function initSettings() {
+    const apiKeyInput = document.getElementById("settings-api-key");
+    const modelSelect = document.getElementById("settings-model");
 
-// 1. Tab Navigation between 4 Dashboards
-function initTabNavigation() {
-  const tabs = document.querySelectorAll('.nav-tab');
-  const views = document.querySelectorAll('.dashboard-view');
+    if (apiKeyInput) {
+      const savedKey = localStorage.getItem("analytica_api_key") || "";
+      apiKeyInput.value = savedKey;
+      apiKeyInput.addEventListener("input", (e) => {
+        localStorage.setItem("analytica_api_key", e.target.value.trim());
+      });
+    }
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const targetView = tab.getAttribute('data-tab');
-
-      tabs.forEach(t => t.classList.remove('active'));
-      views.forEach(v => v.classList.remove('active'));
-
-      tab.classList.add('active');
-      document.getElementById(targetView).classList.add('active');
-
-      if (targetView === 'eda-view') {
-        initCorrelationCanvas();
-        initDistributionCanvas();
-      }
-    });
-  });
-}
-
-// 2. Correlation Matrix Heatmap Renderer (Canvas)
-function initCorrelationCanvas() {
-  const canvas = document.getElementById('correlationCanvas');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width = canvas.parentElement.clientWidth || 500;
-  const height = canvas.height = 300;
-
-  ctx.clearRect(0, 0, width, height);
-
-  const features = ['Revenue', 'Units', 'Discount', 'Customer_Age', 'Margin'];
-  const grid = [
-    [1.00, 0.85, -0.42, 0.12, 0.78],
-    [0.85, 1.00, -0.35, 0.08, 0.65],
-    [-0.42, -0.35, 1.00, -0.05, -0.58],
-    [0.12, 0.08, -0.05, 1.00, 0.15],
-    [0.78, 0.65, -0.58, 0.15, 1.00]
-  ];
-
-  const size = Math.min((width - 100) / 5, (height - 60) / 5);
-  const startX = 90;
-  const startY = 20;
-
-  for (let i = 0; i < 5; i++) {
-    // Row Labels
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '11px JetBrains Mono';
-    ctx.fillText(features[i], 10, startY + i * size + size / 1.6);
-
-    for (let j = 0; j < 5; j++) {
-      // Column Labels (top row)
-      if (i === 0) {
-        ctx.fillText(features[j].substring(0, 4), startX + j * size + 8, 15);
-      }
-
-      const val = grid[i][j];
-      let color;
-      if (val > 0) {
-        const intensity = Math.floor(val * 220);
-        color = `rgba(0, 242, 255, ${val})`;
-      } else {
-        const intensity = Math.floor(Math.abs(val) * 220);
-        color = `rgba(244, 63, 94, ${Math.abs(val)})`;
-      }
-
-      ctx.fillStyle = color;
-      ctx.fillRect(startX + j * size, startY + i * size, size - 2, size - 2);
-
-      ctx.fillStyle = val > 0.5 || val < -0.4 ? '#000' : '#fff';
-      ctx.font = '10px JetBrains Mono';
-      ctx.fillText(val.toFixed(2), startX + j * size + 6, startY + i * size + size / 1.6);
+    if (modelSelect) {
+      const savedModel = localStorage.getItem("analytica_model") || "gemini-2.5-flash";
+      modelSelect.value = savedModel;
+      modelSelect.addEventListener("change", (e) => {
+        localStorage.setItem("analytica_model", e.target.value);
+      });
     }
   }
-}
 
-// 3. Distribution & Scatter Bar Chart Renderer (Canvas)
-function initDistributionCanvas() {
-  const canvas = document.getElementById('distributionCanvas');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width = canvas.parentElement.clientWidth || 500;
-  const height = canvas.height = 300;
-
-  ctx.clearRect(0, 0, width, height);
-
-  const data = [420, 680, 1100, 950, 1420, 1850, 2100, 1650, 1200, 800, 510];
-  const maxVal = 2500;
-  const barWidth = (width - 60) / data.length;
-  const startX = 40;
-  const startY = height - 40;
-
-  // Grid lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 1;
-  for (let y = 0; y <= 4; y++) {
-    const yPos = startY - (y / 4) * (height - 60);
-    ctx.beginPath();
-    ctx.moveTo(startX, yPos);
-    ctx.lineTo(width - 20, yPos);
-    ctx.stroke();
+  function getApiKey() {
+    const apiKeyInput = document.getElementById("settings-api-key");
+    return apiKeyInput ? apiKeyInput.value.trim() : (localStorage.getItem("analytica_api_key") || "");
   }
 
-  // Draw Bars with Cyan Gradient
-  data.forEach((val, i) => {
-    const barHeight = (val / maxVal) * (height - 60);
-    const x = startX + i * barWidth;
-    const y = startY - barHeight;
+  function getSelectedModel() {
+    const modelSelect = document.getElementById("settings-model");
+    return modelSelect ? modelSelect.value : (localStorage.getItem("analytica_model") || "gemini-2.5-flash");
+  }
 
-    const grad = ctx.createLinearGradient(0, y, 0, startY);
-    grad.addColorStop(0, '#00f2ff');
-    grad.addColorStop(1, 'rgba(0, 242, 255, 0.1)');
+  // -------------------------------------------------------------------
+  // 2. DATASET UPLOAD LOGIC
+  // -------------------------------------------------------------------
+  async function uploadFile(file) {
+    if (!file) return;
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(x + 4, y, barWidth - 8, barHeight);
+    const formData = new FormData();
+    formData.append("file", file);
 
-    ctx.strokeStyle = '#00f2ff';
-    ctx.strokeRect(x + 4, y, barWidth - 8, barHeight);
-  });
-}
+    try {
+      const res = await fetch("/api/v1/dataset/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-// 4. CrewAI Agent Execution Logs Streamer
-function initLogStreamer() {
-  const logContainer = document.getElementById('terminalLogs');
-  const runBtn = document.getElementById('runCrewBtn');
-  if (!logContainer || !runBtn) return;
+      const data = await res.json();
 
-  const sampleLogs = [
-    { time: '00:01.12', agent: 'DataCleanerAgent', msg: 'Started ingestion for sales_data.csv [12,450 rows]', class: 'log-cyan' },
-    { time: '00:01.45', agent: 'DataCleanerAgent', msg: 'Missing value audit completed: 0.4% imputed via median strategy.', class: 'log-green' },
-    { time: '00:02.10', agent: 'EDASpecialistAgent', msg: 'Computing Pearson correlation matrix across 18 numerical features...', class: 'log-cyan' },
-    { time: '00:02.85', agent: 'EDASpecialistAgent', msg: 'Strong positive correlation detected between Revenue and Units (r=0.85).', class: 'log-green' },
-    { time: '00:03.40', agent: 'ModelingExpertAgent', msg: 'Training Random Forest Regressor on churn risk indicators...', class: 'log-amber' },
-    { time: '00:04.22', agent: 'ModelingExpertAgent', msg: 'Model evaluation score: R² = 0.941, MAE = 4.12.', class: 'log-green' },
-    { time: '00:05.00', agent: 'ExecutiveReporterAgent', msg: 'Synthesizing automated executive summary and action items.', class: 'log-cyan' },
-    { time: '00:05.60', agent: 'CrewAI Engine', msg: 'Workflow execution completed successfully in 5.60s.', class: 'log-green' }
-  ];
-
-  runBtn.addEventListener('click', () => {
-    logContainer.innerHTML = '';
-    let index = 0;
-    runBtn.disabled = true;
-    runBtn.textContent = '⏳ Execution Running...';
-
-    const interval = setInterval(() => {
-      if (index >= sampleLogs.length) {
-        clearInterval(interval);
-        runBtn.disabled = false;
-        runBtn.textContent = '▶ Run Crew Workflow';
+      if (!res.ok) {
+        alert("Upload Error: " + (data.detail || "Failed to upload dataset"));
         return;
       }
 
-      const log = sampleLogs[index];
-      const div = document.createElement('div');
-      div.className = 'log-line';
-      div.innerHTML = `<span class="log-time">[${log.time}]</span> <span class="log-agent">${log.agent}:</span> <span class="log-msg ${log.class}">${log.msg}</span>`;
-      logContainer.appendChild(div);
-      logContainer.scrollTop = logContainer.scrollHeight;
-      index++;
-    }, 600);
-  });
-}
+      // If on onboarding or empty workspace, transition to populated workspace
+      if (window.location.pathname === "/onboarding" || window.location.pathname === "/workspace-empty") {
+        if (window.AnalyticaRouter && typeof window.AnalyticaRouter.navigate === "function") {
+          window.AnalyticaRouter.navigate("/workspace-populated");
+        } else {
+          window.location.href = "/workspace-populated";
+        }
+      } else {
+        // Refresh preview if already on populated workspace
+        loadPopulatedWorkspaceData();
+      }
+    } catch (err) {
+      console.error("[Upload] Error uploading dataset:", err);
+      alert("Error uploading dataset: " + err.message);
+    }
+  }
+
+  function initUploadEvents() {
+    const dropZone = document.querySelector(".upload-dashed") || document.getElementById("upload-zone");
+    const fileInput = document.getElementById("dataset-file-input") || document.getElementById("dataset-upload-input");
+
+    if (dropZone) {
+      dropZone.addEventListener("click", () => {
+        if (fileInput) fileInput.click();
+      });
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("border-primary");
+      });
+
+      dropZone.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("border-primary");
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("border-primary");
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          uploadFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          uploadFile(e.target.files[0]);
+        }
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // 3. POPULATED WORKSPACE LIVE DATA RENDERING
+  // -------------------------------------------------------------------
+  async function loadPopulatedWorkspaceData() {
+    const tableBody = document.querySelector("#data-table-body") || document.querySelector("#raw-data-table tbody");
+    const tableHeader = document.querySelector("#data-table-head tr") || document.querySelector("#raw-data-table thead tr");
+    const filenameLabel = document.querySelector("#data-filename");
+
+    if (!tableBody) return;
+
+    try {
+      const res = await fetch("/api/v1/dataset/preview");
+      const data = await res.json();
+
+      if (!data.columns || data.columns.length === 0) return;
+
+      // Render Header
+      if (tableHeader) {
+        tableHeader.innerHTML = data.columns
+          .slice(0, 4)
+          .map((col) => `<th class="py-2 font-normal uppercase">${col}</th>`)
+          .join("");
+      }
+
+      // Render Rows
+      tableBody.innerHTML = data.data
+        .slice(0, 25)
+        .map((row) => {
+          const cells = data.columns
+            .slice(0, 4)
+            .map((col, idx) => {
+              const val = row[col] !== null ? row[col] : "null";
+              return `<td class="py-2 ${idx === 0 ? "text-primary font-semibold" : ""}">${val}</td>`;
+            })
+            .join("");
+          return `<tr class="hover:bg-surface-bright transition-colors cursor-pointer group">${cells}</tr>`;
+        })
+        .join("");
+    } catch (err) {
+      console.error("[Workspace] Failed to load dataset preview:", err);
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // 4. COPILOT CHAT INTERACTION
+  // -------------------------------------------------------------------
+  function formatMarkdown(text) {
+    if (!text) return "";
+    let html = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/`([^`]+)`/g, "<code class='bg-surface-variant px-1 rounded'>$1</code>")
+      .replace(/^### (.*$)/gim, "<h3 class='text-sm font-bold text-primary mt-3 mb-1'>$1</h3>")
+      .replace(/^## (.*$)/gim, "<h4 class='text-xs font-bold text-primary mt-2 mb-1'>$1</h4>")
+      .replace(/^- (.*$)/gim, "<li class='ml-4 list-disc'>$1</li>\n")
+      .replace(/\n\n/g, "<br/><br/>");
+    return html;
+  }
+
+  async function sendChatMessage(inputElement, chatContainer) {
+    if (!inputElement || !chatContainer) return;
+
+    const message = inputElement.value.trim();
+    if (!message) return;
+
+    // Clear input
+    inputElement.value = "";
+
+    // Append User Message
+    const userMsgEl = document.createElement("div");
+    userMsgEl.className = "self-end max-w-[85%] border border-[#333] p-3 rounded-bl-lg rounded-tl-lg rounded-tr-lg bg-surface-container";
+    userMsgEl.innerHTML = `<p class="text-on-surface-variant text-xs">${message}</p>`;
+    chatContainer.appendChild(userMsgEl);
+
+    // Scroll chat down
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Append Thinking Indicator
+    const thinkingEl = document.createElement("div");
+    thinkingEl.className = "self-start max-w-[90%] border border-outline-variant bg-[#1a1a1a] p-3 rounded-br-lg rounded-tr-lg rounded-tl-lg font-label-mono text-[11px] leading-relaxed";
+    thinkingEl.innerHTML = `<div class="flex items-center space-x-2 text-primary animate-pulse"><span class="material-symbols-outlined text-sm">smart_toy</span><span>>> AGENTS PROCESSING QUERY...</span></div>`;
+    chatContainer.appendChild(thinkingEl);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    const apiKey = getApiKey();
+    const model = getSelectedModel();
+
+    try {
+      const res = await fetch("/api/v1/copilot/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, api_key: apiKey, model }),
+      });
+
+      const data = await res.json();
+      thinkingEl.remove();
+
+      const aiMsgEl = document.createElement("div");
+      aiMsgEl.className = "self-start max-w-[95%] border border-[#444] bg-[#1a1a1a] p-3 rounded-br-lg rounded-tr-lg rounded-tl-lg font-label-mono text-[11px] leading-relaxed";
+
+      if (data.status === "error") {
+        aiMsgEl.innerHTML = `<p class="text-error font-semibold mb-1">>> ERROR</p><div class="text-on-surface-variant">${formatMarkdown(data.response)}</div>`;
+      } else if (data.status === "warning") {
+        aiMsgEl.innerHTML = `<p class="text-amber-400 font-semibold mb-1">>> NOTICE</p><div class="text-on-surface-variant">${formatMarkdown(data.response)}</div>`;
+      } else {
+        aiMsgEl.innerHTML = `<p class="text-primary font-semibold mb-1">>> ANALYSIS COMPLETE</p><div class="text-on-surface-variant">${formatMarkdown(data.response)}</div>`;
+      }
+
+      chatContainer.appendChild(aiMsgEl);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch (err) {
+      thinkingEl.remove();
+      const errEl = document.createElement("div");
+      errEl.className = "self-start max-w-[95%] border border-error bg-[#1a1a1a] p-3 rounded-br-lg rounded-tr-lg rounded-tl-lg font-label-mono text-[11px]";
+      errEl.innerHTML = `<p class="text-error font-semibold">>> CONNECTION ERROR</p><p class="text-on-surface-variant">${err.message}</p>`;
+      chatContainer.appendChild(errEl);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }
+
+  function initChatEvents() {
+    const chatInputs = document.querySelectorAll(".copilot-chat-input");
+
+    chatInputs.forEach((input) => {
+      const parent = input.closest(".p-4") || input.parentElement;
+      const sendBtn = parent ? parent.querySelector("button") : null;
+      const chatContainer = input.closest("aside, section")?.querySelector(".overflow-y-auto");
+
+      if (sendBtn && chatContainer) {
+        sendBtn.addEventListener("click", () => sendChatMessage(input, chatContainer));
+      }
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && chatContainer) {
+          e.preventDefault();
+          sendChatMessage(input, chatContainer);
+        }
+      });
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // 5. GLOBAL INITIALIZER FOR DYNAMIC SWAPS
+  // -------------------------------------------------------------------
+  function initPage() {
+    initSettings();
+    initUploadEvents();
+    initChatEvents();
+    loadPopulatedWorkspaceData();
+  }
+
+  // Run on initial load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPage);
+  } else {
+    initPage();
+  }
+
+  // Expose hook for client-side router
+  window.AnalyticaApp = {
+    initPage,
+    uploadFile,
+    getApiKey,
+    getSelectedModel,
+  };
+})();

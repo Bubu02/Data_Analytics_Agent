@@ -129,7 +129,10 @@
     </style>
     <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
-  <body class="bg-black text-on-surface min-h-screen flex flex-col overflow-x-hidden font-body-lg antialiased" style="background-color:rgb(0,0,0)">
+  <body class="bg-black text-on-surface min-h-screen flex flex-col overflow-x-hidden font-body-lg antialiased relative" style="background-color:rgb(0,0,0)">
+
+    <!-- GLOBAL CYBER DOTS NETWORK BACKGROUND -->
+    <div class="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-30 mix-blend-screen" style="background-image: url('/static/Images/network-communications-with-flowing-cyber-dots-design_1048-13962.avif');"></div>
 
     <!-- PERSISTENT SIDE NAV -->
     <nav id="side-nav" class="border-r border-outline-variant h-screen w-16 fixed left-0 top-0 flex flex-col items-center py-8 space-y-6 z-50" style="background-color:rgb(0,0,0)">
@@ -180,12 +183,29 @@
           <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-populated" href="/workspace-populated">4. Populated Workspace</a>
         </nav>
         <div class="flex items-center gap-4">
-          <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50">
-            <span class="material-symbols-outlined text-[20px]">search</span>
-          </button>
-          <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50">
-            <span class="material-symbols-outlined text-[20px]">settings</span>
-          </button>
+          <div class="relative group">
+            <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50">
+              <span class="material-symbols-outlined text-[20px]">settings</span>
+            </button>
+            <div class="absolute right-0 top-full mt-2 w-72 bg-surface-container-highest border border-outline-variant p-4 rounded shadow-xl hidden group-hover:block z-50">
+              <h3 class="font-label-mono text-[10px] text-primary uppercase mb-3 tracking-widest">Engine Settings</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-mono text-[9px] text-on-surface-variant uppercase mb-1">Gemini API Key</label>
+                  <input type="password" id="settings-api-key" class="w-full bg-background border border-outline-variant text-primary text-[10px] p-2 focus:outline-none focus:border-primary" placeholder="Enter API Key...">
+                </div>
+                <div>
+                  <label class="block font-label-mono text-[9px] text-on-surface-variant uppercase mb-1">Model Selection</label>
+                  <select id="settings-model" class="w-full bg-background border border-outline-variant text-primary text-[10px] p-2 focus:outline-none focus:border-primary">
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
           <button class="text-primary hover:opacity-70 transition-opacity duration-200 cursor-pointer active:opacity-50 relative">
             <span class="material-symbols-outlined text-[20px]">notifications</span>
             <span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
@@ -328,6 +348,9 @@
             await new Promise(r => setTimeout(r, 150));
             contentEl.innerHTML = html;
             execScripts(contentEl);
+            if (window.AnalyticaApp && typeof window.AnalyticaApp.initPage === 'function') {
+              window.AnalyticaApp.initPage();
+            }
             window.scrollTo({ top: 0, behavior: 'instant' });
             contentEl.classList.remove('is-loading');
 
@@ -340,6 +363,8 @@
             window.location.href = url;
           }
         }
+
+        window.AnalyticaRouter = { navigate };
 
         document.addEventListener('click', e => {
           const link = e.target.closest('a[href]');
@@ -359,5 +384,6 @@
         history.replaceState({ page: initialPage, url: window.location.pathname }, '', window.location.pathname);
       })();
     </script>
+    <script src="/static/js/app.js"></script>
   </body>
 </html>
