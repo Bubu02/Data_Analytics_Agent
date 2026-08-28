@@ -1,75 +1,12 @@
-<!-- Empty Workspace partial -->
+<!-- Workspace partial -->
 <main class="flex-1 flex relative" style="background-color:rgba(0,0,0,0.4)">
 
   <!-- Central Canvas -->
-  <div class="flex-1 flex flex-col relative p-8 md:p-12">
-
-    <!-- Empty state (shown when no dataset in sessionStorage) -->
-    <div id="ws-empty-state" class="flex-1 flex items-center justify-center">
-      <div
-        class="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto border border-outline-variant bg-surface/80 backdrop-blur-md p-16 rounded"
-        style="background-color: rgb(0,0,0)"
-      >
-        <div class="w-24 h-24 mb-8 text-on-surface-variant flex items-center justify-center opacity-50">
-          <span class="material-symbols-outlined" style="font-size:64px">data_exploration</span>
-        </div>
-        <h1 class="font-headline-md text-headline-md text-primary mb-4 tracking-tight">
-          Workspace is empty
-        </h1>
-        <p class="font-body-lg text-body-lg text-on-surface-variant mb-12">
-          Initialize a new data model or import a dataset to begin structural analysis.
-        </p>
-        <button id="new-analysis-btn" class="bg-primary text-on-primary font-label-mono text-label-mono uppercase px-8 py-4 flex items-center space-x-2 hover:bg-tertiary-fixed-dim transition-colors">
-          <span class="material-symbols-outlined text-sm">add</span>
-          <span>New Analysis</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Populated preview state (shown when dataset exists in sessionStorage) -->
-    <div id="ws-preview-state" class="hidden flex-1 flex flex-col">
-
-      <!-- Header chip -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center space-x-3">
-          <div class="inline-flex items-center space-x-2 px-4 py-2 border border-outline-variant rounded-full bg-surface-container/50 backdrop-blur-sm">
-            <span class="material-symbols-outlined text-sm text-primary">description</span>
-            <span id="ds-filename" class="font-label-mono text-label-mono text-primary uppercase"></span>
-            <span class="text-outline-variant">|</span>
-            <span id="ds-row-count" class="font-label-mono text-label-mono text-on-surface-variant"></span>
-          </div>
-        </div>
-        <button id="replace-dataset-btn" class="px-5 py-2 border border-outline-variant text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary hover:border-primary transition-colors rounded flex items-center space-x-2">
-          <span class="material-symbols-outlined text-sm">swap_horiz</span>
-          <span>Replace</span>
-        </button>
-      </div>
-
-      <!-- Data preview table -->
-      <div class="border border-outline-variant rounded-lg overflow-hidden flex-1 flex flex-col" style="background-color: rgb(0,0,0)">
-        <div class="p-4 border-b border-outline-variant flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <span class="material-symbols-outlined text-sm text-primary">table_chart</span>
-            <span class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Data Preview</span>
-          </div>
-          <span class="font-label-mono text-[10px] text-on-surface-variant uppercase">First 10 rows</span>
-        </div>
-        <div class="flex-1 overflow-auto">
-          <table class="w-full text-left font-label-mono text-[11px]">
-            <thead id="preview-thead" class="sticky top-0 z-10 border-b border-outline-variant" style="background-color: rgb(19,19,19)">
-            </thead>
-            <tbody id="preview-tbody" class="divide-y divide-[#222]">
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Viz slot for future use -->
-      <div id="viz-slot" class="mt-6"></div>
-    </div>
+  <div id="ws-canvas" class="flex-1 flex flex-col relative p-8 md:p-12 overflow-y-auto">
+    <!-- Dynamically rendered by <script> below -->
   </div>
 
-  <!-- AI Copilot Panel -->
+  <!-- AI Copilot Panel (unchanged) -->
   <aside class="w-96 border-l border-outline-variant bg-surface flex flex-col flex-shrink-0" style="min-height:calc(100vh - 3rem - var(--footer-h)); background-color:rgb(0,0,0)">
     <!-- Chat Header -->
     <div class="h-14 border-b border-outline-variant flex items-center justify-between px-6 bg-surface-container-low" style="background-color:rgb(0,0,0)">
@@ -123,83 +60,345 @@
 
 <script>
 (() => {
-  const emptyState = document.getElementById('ws-empty-state');
-  const previewState = document.getElementById('ws-preview-state');
-  const newAnalysisBtn = document.getElementById('new-analysis-btn');
-  const replaceBtn = document.getElementById('replace-dataset-btn');
+  /* ================================================================
+     SESSION STORAGE HELPERS
+     Key: 'datasets'
+     Shape: { datasets: [{id, filename, rowCount, columnCount,
+              columns:[{name,dtype}], previewRows, uploadedAt}],
+              activeDatasetId }
+     ================================================================ */
+  const STORAGE_KEY = 'datasets';
+  const canvas = document.getElementById('ws-canvas');
 
-  function goToOnboarding() {
-    sessionStorage.removeItem('activeDataset');
-    if (window.AppRouter && typeof window.AppRouter.navigate === 'function') {
-      window.AppRouter.navigate('/onboarding');
+  function load() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return { datasets: [], activeDatasetId: null };
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.datasets)) return { datasets: [], activeDatasetId: null };
+      return parsed;
+    } catch { return { datasets: [], activeDatasetId: null }; }
+  }
+
+  function save(store) {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  }
+
+  function uid() {
+    return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+  }
+
+  /* ================================================================
+     RENDER
+     ================================================================ */
+  function render() {
+    const store = load();
+    canvas.innerHTML = '';
+
+    if (store.datasets.length === 0) {
+      renderEmpty(canvas);
     } else {
-      window.location.href = '/onboarding';
+      renderPopulated(canvas, store);
     }
   }
 
-  // Wire buttons
-  newAnalysisBtn.addEventListener('click', goToOnboarding);
-  if (replaceBtn) replaceBtn.addEventListener('click', goToOnboarding);
-
-  // Read dataset from sessionStorage
-  const raw = sessionStorage.getItem('activeDataset');
-  if (!raw) {
-    // No dataset — show empty state
-    emptyState.classList.remove('hidden');
-    previewState.classList.add('hidden');
-    return;
+  /* ----------------------------------------------------------------
+     EMPTY STATE — upload dropzone
+     ---------------------------------------------------------------- */
+  function renderEmpty(root) {
+    root.innerHTML = `
+      <div class="flex-1 flex items-center justify-center">
+        <div class="max-w-2xl w-full flex flex-col items-center">
+          <div class="text-center mb-10">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 border border-surface-variant rounded-full mb-6 bg-surface-container/50 backdrop-blur-sm">
+              <span class="material-symbols-outlined text-sm text-primary">data_object</span>
+              <span class="font-label-mono text-label-mono text-primary uppercase">Workspace Initialization</span>
+            </div>
+            <h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-4">Connect your First Dataset</h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">Upload CSV, JSON, or Parquet files to begin model training.</p>
+          </div>
+          ${dropzoneMarkup('main-dropzone')}
+        </div>
+      </div>`;
+    wireDropzone(root.querySelector('#main-dropzone'), false);
   }
 
-  let dataset;
-  try {
-    dataset = JSON.parse(raw);
-  } catch (e) {
-    emptyState.classList.remove('hidden');
-    previewState.classList.add('hidden');
-    return;
-  }
+  /* ----------------------------------------------------------------
+     POPULATED STATE — switcher + preview + add + edit
+     ---------------------------------------------------------------- */
+  function renderPopulated(root, store) {
+    const active = store.datasets.find(d => d.id === store.activeDatasetId) || store.datasets[0];
 
-  // Show preview state
-  emptyState.classList.add('hidden');
-  previewState.classList.remove('hidden');
+    /* Build switcher list items */
+    const listItems = store.datasets.map(ds => {
+      const isActive = ds.id === active.id;
+      return `
+        <div class="ds-switch-item flex items-center justify-between px-4 py-3 cursor-pointer border border-outline-variant rounded transition-all ${isActive ? 'bg-primary text-on-primary' : 'bg-surface-container hover:bg-surface-container-highest text-on-surface-variant hover:text-primary'}" data-id="${ds.id}">
+          <div class="flex items-center space-x-3 flex-1 min-w-0">
+            <span class="material-symbols-outlined text-sm ${isActive ? '' : 'text-outline'}" style="font-variation-settings:'FILL' 1">description</span>
+            <div class="flex flex-col min-w-0">
+              <span class="font-label-mono text-[11px] uppercase tracking-wider truncate">${esc(ds.filename)}</span>
+              <span class="font-label-mono text-[9px] ${isActive ? 'text-on-primary/70' : 'text-outline'}">${(ds.rowCount || 0).toLocaleString()} rows · ${ds.columnCount || 0} cols</span>
+            </div>
+          </div>
+          <button class="ds-remove-btn hidden ml-2 p-1 rounded hover:bg-error/20 transition-colors" data-id="${ds.id}" title="Remove dataset">
+            <span class="material-symbols-outlined text-sm text-error">close</span>
+          </button>
+        </div>`;
+    }).join('');
 
-  // Populate header chip
-  document.getElementById('ds-filename').textContent = dataset.filename || 'dataset';
-  document.getElementById('ds-row-count').textContent = (dataset.row_count || 0).toLocaleString() + ' rows';
+    /* Build preview table */
+    const columns = active.columns || [];
+    const rows = (active.previewRows || []).slice(0, 10);
+    const headerCells = columns.map(c => `<th class="py-2 px-3 font-semibold text-primary uppercase whitespace-nowrap">${esc(c.name)}</th>`).join('');
+    const dtypeCells = columns.map(c => `<th class="py-1 px-3 font-normal text-[10px] text-on-surface-variant whitespace-nowrap border-b border-outline-variant">${esc(c.dtype)}</th>`).join('');
+    const bodyRows = rows.map(row => {
+      const cells = columns.map(c => {
+        const v = row[c.name];
+        return `<td class="py-2 px-3 text-on-surface-variant whitespace-nowrap">${v === null || v === undefined ? '—' : esc(String(v))}</td>`;
+      }).join('');
+      return `<tr class="hover:bg-surface-bright transition-colors">${cells}</tr>`;
+    }).join('');
 
-  // Build table header — two rows: names and dtypes
-  const thead = document.getElementById('preview-thead');
-  const columns = dataset.columns || [];
-  const nameRow = document.createElement('tr');
-  const dtypeRow = document.createElement('tr');
-  columns.forEach(col => {
-    const th = document.createElement('th');
-    th.className = 'py-2 px-3 font-semibold text-primary uppercase whitespace-nowrap';
-    th.textContent = col.name;
-    nameRow.appendChild(th);
+    root.innerHTML = `
+      <!-- Dataset Switcher -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+          <span class="material-symbols-outlined text-sm text-primary">folder_open</span>
+          <span class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Datasets</span>
+          <span class="font-label-mono text-[10px] text-outline ml-1">(${store.datasets.length})</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="edit-toggle-btn" class="px-3 py-1.5 border border-outline-variant text-on-surface-variant font-label-mono text-[10px] uppercase hover:text-primary hover:border-primary transition-colors rounded flex items-center space-x-1">
+            <span class="material-symbols-outlined text-xs">edit</span>
+            <span>Edit</span>
+          </button>
+          <button id="add-dataset-btn" class="px-3 py-1.5 border border-outline-variant text-on-surface-variant font-label-mono text-[10px] uppercase hover:text-primary hover:border-primary transition-colors rounded flex items-center space-x-1">
+            <span class="material-symbols-outlined text-xs">add</span>
+            <span>Add Dataset</span>
+          </button>
+        </div>
+      </div>
 
-    const td = document.createElement('th');
-    td.className = 'py-1 px-3 font-normal text-[10px] text-on-surface-variant whitespace-nowrap border-b border-outline-variant';
-    td.textContent = col.dtype;
-    dtypeRow.appendChild(td);
-  });
-  thead.appendChild(nameRow);
-  thead.appendChild(dtypeRow);
+      <div id="switcher-list" class="flex flex-wrap gap-2 mb-6">${listItems}</div>
 
-  // Build table body
-  const tbody = document.getElementById('preview-tbody');
-  const rows = dataset.preview || [];
-  rows.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-surface-bright transition-colors';
-    columns.forEach(col => {
-      const td = document.createElement('td');
-      td.className = 'py-2 px-3 text-on-surface-variant whitespace-nowrap';
-      const val = row[col.name];
-      td.textContent = val === null || val === undefined ? '—' : String(val);
-      tr.appendChild(td);
+      <!-- Inline dropzone (hidden until Add Dataset is clicked) -->
+      <div id="add-dropzone-wrapper" class="hidden mb-6">
+        ${dropzoneMarkup('add-dropzone')}
+      </div>
+
+      <!-- Active dataset header chip -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="inline-flex items-center space-x-2 px-4 py-2 border border-outline-variant rounded-full bg-surface-container/50 backdrop-blur-sm">
+          <span class="material-symbols-outlined text-sm text-primary">description</span>
+          <span class="font-label-mono text-label-mono text-primary uppercase">${esc(active.filename)}</span>
+          <span class="text-outline-variant">|</span>
+          <span class="font-label-mono text-label-mono text-on-surface-variant">${(active.rowCount || 0).toLocaleString()} rows</span>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      <div class="border border-outline-variant rounded-lg overflow-hidden flex-1 flex flex-col" style="background-color: rgb(0,0,0)">
+        <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-sm text-primary">table_chart</span>
+            <span class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Data Preview</span>
+          </div>
+          <span class="font-label-mono text-[10px] text-on-surface-variant uppercase">First 10 rows</span>
+        </div>
+        <div class="flex-1 overflow-auto">
+          <table class="w-full text-left font-label-mono text-[11px]">
+            <thead class="sticky top-0 z-10 border-b border-outline-variant" style="background-color: rgb(19,19,19)">
+              <tr>${headerCells}</tr>
+              <tr>${dtypeCells}</tr>
+            </thead>
+            <tbody class="divide-y divide-[#222]">${bodyRows}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Viz slot for future use -->
+      <div id="viz-slot"></div>`;
+
+    /* Wire interactions */
+    wireDropzone(root.querySelector('#add-dropzone'), true);
+
+    // Add Dataset toggle
+    const addBtn = root.querySelector('#add-dataset-btn');
+    const addWrapper = root.querySelector('#add-dropzone-wrapper');
+    addBtn.addEventListener('click', () => {
+      const shown = !addWrapper.classList.contains('hidden');
+      addWrapper.classList.toggle('hidden', shown);
+      addBtn.querySelector('span:last-child').textContent = shown ? 'Add Dataset' : 'Cancel';
     });
-    tbody.appendChild(tr);
-  });
+
+    // Edit toggle
+    const editBtn = root.querySelector('#edit-toggle-btn');
+    let editing = false;
+    editBtn.addEventListener('click', () => {
+      editing = !editing;
+      editBtn.querySelector('span:last-child').textContent = editing ? 'Done' : 'Edit';
+      root.querySelectorAll('.ds-remove-btn').forEach(b => b.classList.toggle('hidden', !editing));
+    });
+
+    // Switcher clicks
+    root.querySelectorAll('.ds-switch-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.ds-remove-btn')) return;
+        const id = item.dataset.id;
+        const s = load();
+        s.activeDatasetId = id;
+        save(s);
+        render();
+      });
+    });
+
+    // Remove clicks
+    root.querySelectorAll('.ds-remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const s = load();
+        s.datasets = s.datasets.filter(d => d.id !== id);
+        if (s.activeDatasetId === id) {
+          s.activeDatasetId = s.datasets.length > 0 ? s.datasets[0].id : null;
+        }
+        save(s);
+        render();
+      });
+    });
+  }
+
+  /* ================================================================
+     DROPZONE MARKUP + WIRING
+     ================================================================ */
+  function dropzoneMarkup(id) {
+    return `
+      <div class="w-full bg-surface-container-lowest/80 backdrop-blur-xl border border-surface-variant p-8 rounded-lg shadow-2xl" style="border-color: rgb(255,255,255)">
+        <input type="file" id="${id}-input" class="hidden" accept=".csv,.json,.parquet">
+        <div id="${id}" class="upload-dashed w-full h-52 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-surface-container-low transition-colors group relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+          <div id="${id}-default" class="flex flex-col items-center">
+            <div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center mb-4 group-hover:scale-110 transition-transform mx-auto">
+              <span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">Drag &amp; Drop Files</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">or click to browse local files</p>
+            <p class="font-label-mono text-label-mono text-outline mt-4 uppercase">Max 500MB &bull; CSV, JSON, Parquet</p>
+          </div>
+          <div id="${id}-spinner" class="hidden flex flex-col items-center">
+            <div class="w-12 h-12 border-2 border-outline-variant border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Uploading &amp; Parsing...</p>
+          </div>
+          <div id="${id}-error" class="hidden flex flex-col items-center">
+            <div class="w-16 h-16 rounded-full bg-error-container/30 flex items-center justify-center mb-4 mx-auto">
+              <span class="material-symbols-outlined text-3xl text-error">error</span>
+            </div>
+            <p id="${id}-error-msg" class="font-body-sm text-body-sm text-error mb-4"></p>
+            <button id="${id}-retry" class="px-6 py-2 border border-error text-error font-label-mono text-label-mono uppercase hover:bg-error/10 transition-colors rounded">Retry Upload</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function wireDropzone(zone, isAppend) {
+    if (!zone) return;
+    const id = zone.id;
+    const fileInput = document.getElementById(id + '-input');
+    const dflt = document.getElementById(id + '-default');
+    const spinner = document.getElementById(id + '-spinner');
+    const errEl = document.getElementById(id + '-error');
+    const errMsg = document.getElementById(id + '-error-msg');
+    const retryBtn = document.getElementById(id + '-retry');
+    let lastFile = null;
+
+    function showState(state) {
+      dflt.classList.add('hidden');
+      spinner.classList.add('hidden');
+      errEl.classList.add('hidden');
+      if (state === 'default') dflt.classList.remove('hidden');
+      if (state === 'uploading') spinner.classList.remove('hidden');
+      if (state === 'error') errEl.classList.remove('hidden');
+    }
+
+    zone.addEventListener('click', (e) => {
+      if (e.target.closest('button') && e.target.closest('button') !== retryBtn) return;
+      if (e.target.closest('button') === retryBtn) return;
+      if (!spinner.classList.contains('hidden')) return;
+      fileInput.click();
+    });
+
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); zone.classList.add('bg-surface-container-low'); });
+    zone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); zone.classList.remove('bg-surface-container-low'); });
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('bg-surface-container-low');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { lastFile = e.dataTransfer.files[0]; doUpload(lastFile); }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) { lastFile = fileInput.files[0]; doUpload(lastFile); }
+    });
+
+    if (retryBtn) {
+      retryBtn.addEventListener('click', (e) => { e.stopPropagation(); if (lastFile) doUpload(lastFile); });
+    }
+
+    async function doUpload(file) {
+      showState('uploading');
+      zone.style.pointerEvents = 'none';
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/v1/dataset/upload', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.detail || `Upload failed (HTTP ${res.status})`);
+        }
+        const data = await res.json();
+
+        /* Build dataset entry */
+        const entry = {
+          id: uid(),
+          filename: data.filename,
+          rowCount: data.row_count,
+          columnCount: data.column_count,
+          columns: data.columns,
+          previewRows: data.preview,
+          uploadedAt: new Date().toISOString(),
+        };
+
+        const store = load();
+        store.datasets.push(entry);
+        if (!isAppend) {
+          store.activeDatasetId = entry.id;
+        } else {
+          /* Keep current active; only set if first */
+          if (!store.activeDatasetId) store.activeDatasetId = entry.id;
+          else store.activeDatasetId = entry.id; /* switch to newly added */
+        }
+        save(store);
+        render();
+      } catch (err) {
+        errMsg.textContent = err.message || 'An unexpected error occurred.';
+        showState('error');
+        zone.style.pointerEvents = '';
+      }
+    }
+  }
+
+  /* ================================================================
+     UTIL
+     ================================================================ */
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /* ================================================================
+     INIT
+     ================================================================ */
+  render();
 })();
 </script>

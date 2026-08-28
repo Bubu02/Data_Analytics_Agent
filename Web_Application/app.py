@@ -4,7 +4,7 @@ import io
 from typing import Optional
 import pandas as pd
 from fastapi import FastAPI, Request, File, UploadFile, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
@@ -47,7 +47,6 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 @app.get("/", response_class=HTMLResponse, summary="Root redirect")
 async def read_root(request: Request):
     """Redirects root URL to the homepage."""
-    from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/homepage", status_code=302)
 
 
@@ -59,27 +58,17 @@ async def read_homepage(request: Request):
     )
 
 
-@app.get("/onboarding", response_class=HTMLResponse, summary="Dataset Connection & Onboarding")
-async def read_onboarding(request: Request):
-    """Renders the shell with Onboarding as the initial content (SSR first load)."""
-    return templates.TemplateResponse(
-        request=request, name="shell.html", context={"initial_page": "onboarding"}
-    )
+@app.get("/onboarding", summary="Redirect to Workspace")
+async def read_onboarding():
+    """Legacy onboarding URL — redirects to the workspace."""
+    return RedirectResponse(url="/workspace-empty", status_code=302)
 
 
-@app.get("/workspace-empty", response_class=HTMLResponse, summary="Empty Workspace & AI Copilot")
+@app.get("/workspace-empty", response_class=HTMLResponse, summary="Data Workspace & AI Copilot")
 async def read_workspace_empty(request: Request):
-    """Renders the shell with Empty Workspace as the initial content (SSR first load)."""
+    """Renders the shell with the workspace as the initial content (SSR first load)."""
     return templates.TemplateResponse(
         request=request, name="shell.html", context={"initial_page": "workspace-empty"}
-    )
-
-
-@app.get("/workspace-populated", response_class=HTMLResponse, summary="Populated Analytics Workspace")
-async def read_workspace_populated(request: Request):
-    """Renders the shell with Populated Workspace as the initial content (SSR first load)."""
-    return templates.TemplateResponse(
-        request=request, name="shell.html", context={"initial_page": "workspace-populated"}
     )
 
 
@@ -95,22 +84,10 @@ async def partial_homepage(request: Request):
     return templates.TemplateResponse(request=request, name="partials/homepage.html")
 
 
-@app.get("/partial/onboarding", response_class=HTMLResponse, summary="Onboarding content fragment")
-async def partial_onboarding(request: Request):
-    """Returns only the onboarding content HTML (no shell) for client-side routing."""
-    return templates.TemplateResponse(request=request, name="partials/onboarding.html")
-
-
-@app.get("/partial/workspace-empty", response_class=HTMLResponse, summary="Empty workspace content fragment")
+@app.get("/partial/workspace-empty", response_class=HTMLResponse, summary="Workspace content fragment")
 async def partial_workspace_empty(request: Request):
-    """Returns only the empty workspace content HTML (no shell) for client-side routing."""
+    """Returns only the workspace content HTML (no shell) for client-side routing."""
     return templates.TemplateResponse(request=request, name="partials/workspace-empty.html")
-
-
-@app.get("/partial/workspace-populated", response_class=HTMLResponse, summary="Populated workspace content fragment")
-async def partial_workspace_populated(request: Request):
-    """Returns only the populated workspace content HTML (no shell) for client-side routing."""
-    return templates.TemplateResponse(request=request, name="partials/workspace-populated.html")
 
 
 # =====================================================================

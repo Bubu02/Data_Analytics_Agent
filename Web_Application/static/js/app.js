@@ -61,16 +61,11 @@
         return;
       }
 
-      // If on onboarding or empty workspace, transition to populated workspace
-      if (window.location.pathname === "/onboarding" || window.location.pathname === "/workspace-empty") {
+      // Dataset upload success handled by local page component
+      if (window.location.pathname === "/workspace-empty") {
         if (window.AnalyticaRouter && typeof window.AnalyticaRouter.navigate === "function") {
-          window.AnalyticaRouter.navigate("/workspace-populated");
-        } else {
-          window.location.href = "/workspace-populated";
+          window.AnalyticaRouter.navigate("/workspace-empty");
         }
-      } else {
-        // Refresh preview if already on populated workspace
-        loadPopulatedWorkspaceData();
       }
     } catch (err) {
       console.error("[Upload] Error uploading dataset:", err);

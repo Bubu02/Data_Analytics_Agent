@@ -145,13 +145,7 @@
         <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="homepage" href="/homepage" title="Homepage">
           <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">grid_view</span>
         </a>
-        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="onboarding" href="/onboarding" title="Connect Data">
-          <span class="material-symbols-outlined">database</span>
-        </a>
-        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="workspace-empty" href="/workspace-empty" title="Empty Workspace">
-          <span class="material-symbols-outlined">cloud_download</span>
-        </a>
-        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="workspace-populated" href="/workspace-populated" title="Analytics Workspace">
+        <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" data-page="workspace-empty" href="/workspace-empty" title="Workspace">
           <span class="material-symbols-outlined">terminal</span>
         </a>
         <a class="side-nav-link w-full flex justify-center py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-all scale-95 duration-150 cursor-pointer" href="#" title="Archive">
@@ -178,9 +172,7 @@
         </div>
         <nav class="hidden md:flex items-center gap-6">
           <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="homepage" href="/homepage">1. Homepage</a>
-          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="onboarding" href="/onboarding">2. Connect Data</a>
-          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-empty" href="/workspace-empty">3. Empty Workspace</a>
-          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-populated" href="/workspace-populated">4. Populated Workspace</a>
+          <a class="top-nav-link font-label-mono text-label-mono text-on-surface-variant hover:text-primary transition-colors" data-page="workspace-empty" href="/workspace-empty">2. Workspace</a>
         </nav>
         <div class="flex items-center gap-4">
           <div class="relative group">
@@ -302,15 +294,11 @@
       (() => {
         const ROUTES = {
           '/homepage':            'homepage',
-          '/onboarding':          'onboarding',
           '/workspace-empty':     'workspace-empty',
-          '/workspace-populated': 'workspace-populated',
         };
         const PAGE_TITLES = {
           'homepage':            'Analytica AI - Homepage',
-          'onboarding':          'Analytica AI - Connect Dataset',
-          'workspace-empty':     'Analytica AI - Empty Workspace',
-          'workspace-populated': 'Analytica AI - Analytics Workspace',
+          'workspace-empty':     'Analytica AI - Workspace',
         };
         const contentEl = document.getElementById('page-content');
 
