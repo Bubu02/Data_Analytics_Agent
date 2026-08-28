@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple, Optional
 
 # Must be set BEFORE importing CrewAI
@@ -34,6 +35,17 @@ def clean_response(text: Optional[str]) -> str:
     if text is None:
         return ""
     return str(text).strip()
+
+
+def _run_crew(crew: Crew):
+    """
+    Executes crew.kickoff() in an isolated thread worker.
+    This avoids 'Agent execution was invoked synchronously from within a running event loop'
+    errors when invoked from asynchronous frameworks such as FastAPI/AnyIO.
+    """
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(crew.kickoff)
+        return future.result()
 
 
 # =====================================================================
@@ -254,7 +266,7 @@ def run_single_agent(
     )
 
     try:
-        output = crew.kickoff()
+        output = _run_crew(crew)
         if hasattr(output, "tasks_output") and output.tasks_output:
             return clean_response(get_task_output_text(output.tasks_output[0]))
         return clean_response(get_task_output_text(output))
@@ -304,7 +316,7 @@ def run_full_analysis(
     )
 
     try:
-        crew_output = crew.kickoff()
+        crew_output = _run_crew(crew)
         outputs = crew_output.tasks_output
         cleaner_out = get_task_output_text(outputs[0])
         analyst_out = get_task_output_text(outputs[1])

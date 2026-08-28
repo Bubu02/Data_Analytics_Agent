@@ -1,6 +1,7 @@
 import os
 import sys
 import io
+import asyncio
 from typing import Optional
 import pandas as pd
 from fastapi import FastAPI, Request, File, UploadFile, HTTPException
@@ -219,12 +220,13 @@ async def copilot_chat(query: dict):
     if state.df is None:
         return {
             "query": user_message,
-            "response": "⚠️ No active dataset loaded. Please upload a dataset on the **Connect Data** page to begin analysis.",
+            "response": "⚠️ No active dataset loaded. Please upload a dataset in the **Workspace** to begin analysis.",
             "status": "warning"
         }
 
     try:
-        response = analytics_engine.route_query(
+        response = await asyncio.to_thread(
+            analytics_engine.route_query,
             df=state.df,
             api_key=api_key,
             prompt=user_message,

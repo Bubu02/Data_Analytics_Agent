@@ -37,7 +37,7 @@ def test_fastapi_endpoints():
     files = {"file": ("test_sample.csv", csv_data, "text/csv")}
     upload_res = client.post("/api/v1/dataset/upload", files=files)
     assert upload_res.status_code == 200, f"Upload failed: {upload_res.json()}"
-    assert upload_res.json()["rows"] == 2, f"Incorrect row count: {upload_res.json()}"
+    assert upload_res.json()["row_count"] == 2, f"Incorrect row count: {upload_res.json()}"
 
     prev_res = client.get("/api/v1/dataset/preview")
     assert prev_res.status_code == 200
