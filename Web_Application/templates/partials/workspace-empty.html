@@ -1,24 +1,71 @@
 <!-- Empty Workspace partial -->
 <main class="flex-1 flex relative" style="background-color:rgba(0,0,0,0.4)">
-  <!-- Central Canvas (Empty State) -->
-  <div class="flex-1 flex items-center justify-center relative p-8 md:p-12">
-    <div
-      class="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto border border-outline-variant bg-surface/80 backdrop-blur-md p-16 rounded"
-      style="background-color: rgb(0,0,0)"
-    >
-      <div class="w-24 h-24 mb-8 text-on-surface-variant flex items-center justify-center opacity-50">
-        <span class="material-symbols-outlined" style="font-size:64px">data_exploration</span>
+
+  <!-- Central Canvas -->
+  <div class="flex-1 flex flex-col relative p-8 md:p-12">
+
+    <!-- Empty state (shown when no dataset in sessionStorage) -->
+    <div id="ws-empty-state" class="flex-1 flex items-center justify-center">
+      <div
+        class="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto border border-outline-variant bg-surface/80 backdrop-blur-md p-16 rounded"
+        style="background-color: rgb(0,0,0)"
+      >
+        <div class="w-24 h-24 mb-8 text-on-surface-variant flex items-center justify-center opacity-50">
+          <span class="material-symbols-outlined" style="font-size:64px">data_exploration</span>
+        </div>
+        <h1 class="font-headline-md text-headline-md text-primary mb-4 tracking-tight">
+          Workspace is empty
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mb-12">
+          Initialize a new data model or import a dataset to begin structural analysis.
+        </p>
+        <button id="new-analysis-btn" class="bg-primary text-on-primary font-label-mono text-label-mono uppercase px-8 py-4 flex items-center space-x-2 hover:bg-tertiary-fixed-dim transition-colors">
+          <span class="material-symbols-outlined text-sm">add</span>
+          <span>New Analysis</span>
+        </button>
       </div>
-      <h1 class="font-headline-md text-headline-md text-primary mb-4 tracking-tight">
-        Workspace is empty
-      </h1>
-      <p class="font-body-lg text-body-lg text-on-surface-variant mb-12">
-        Initialize a new data model or import a dataset to begin structural analysis.
-      </p>
-      <button class="bg-primary text-on-primary font-label-mono text-label-mono uppercase px-8 py-4 flex items-center space-x-2 hover:bg-tertiary-fixed-dim transition-colors">
-        <span class="material-symbols-outlined text-sm">add</span>
-        <span>New Analysis</span>
-      </button>
+    </div>
+
+    <!-- Populated preview state (shown when dataset exists in sessionStorage) -->
+    <div id="ws-preview-state" class="hidden flex-1 flex flex-col">
+
+      <!-- Header chip -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="inline-flex items-center space-x-2 px-4 py-2 border border-outline-variant rounded-full bg-surface-container/50 backdrop-blur-sm">
+            <span class="material-symbols-outlined text-sm text-primary">description</span>
+            <span id="ds-filename" class="font-label-mono text-label-mono text-primary uppercase"></span>
+            <span class="text-outline-variant">|</span>
+            <span id="ds-row-count" class="font-label-mono text-label-mono text-on-surface-variant"></span>
+          </div>
+        </div>
+        <button id="replace-dataset-btn" class="px-5 py-2 border border-outline-variant text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary hover:border-primary transition-colors rounded flex items-center space-x-2">
+          <span class="material-symbols-outlined text-sm">swap_horiz</span>
+          <span>Replace</span>
+        </button>
+      </div>
+
+      <!-- Data preview table -->
+      <div class="border border-outline-variant rounded-lg overflow-hidden flex-1 flex flex-col" style="background-color: rgb(0,0,0)">
+        <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-sm text-primary">table_chart</span>
+            <span class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Data Preview</span>
+          </div>
+          <span class="font-label-mono text-[10px] text-on-surface-variant uppercase">First 10 rows</span>
+        </div>
+        <div class="flex-1 overflow-auto">
+          <table class="w-full text-left font-label-mono text-[11px]">
+            <thead id="preview-thead" class="sticky top-0 z-10 border-b border-outline-variant" style="background-color: rgb(19,19,19)">
+            </thead>
+            <tbody id="preview-tbody" class="divide-y divide-[#222]">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Viz slot for future use -->
+      <div id="viz-slot" class="mt-6"></div>
     </div>
   </div>
 
@@ -73,3 +120,86 @@
     </div>
   </aside>
 </main>
+
+<script>
+(() => {
+  const emptyState = document.getElementById('ws-empty-state');
+  const previewState = document.getElementById('ws-preview-state');
+  const newAnalysisBtn = document.getElementById('new-analysis-btn');
+  const replaceBtn = document.getElementById('replace-dataset-btn');
+
+  function goToOnboarding() {
+    sessionStorage.removeItem('activeDataset');
+    if (window.AppRouter && typeof window.AppRouter.navigate === 'function') {
+      window.AppRouter.navigate('/onboarding');
+    } else {
+      window.location.href = '/onboarding';
+    }
+  }
+
+  // Wire buttons
+  newAnalysisBtn.addEventListener('click', goToOnboarding);
+  if (replaceBtn) replaceBtn.addEventListener('click', goToOnboarding);
+
+  // Read dataset from sessionStorage
+  const raw = sessionStorage.getItem('activeDataset');
+  if (!raw) {
+    // No dataset — show empty state
+    emptyState.classList.remove('hidden');
+    previewState.classList.add('hidden');
+    return;
+  }
+
+  let dataset;
+  try {
+    dataset = JSON.parse(raw);
+  } catch (e) {
+    emptyState.classList.remove('hidden');
+    previewState.classList.add('hidden');
+    return;
+  }
+
+  // Show preview state
+  emptyState.classList.add('hidden');
+  previewState.classList.remove('hidden');
+
+  // Populate header chip
+  document.getElementById('ds-filename').textContent = dataset.filename || 'dataset';
+  document.getElementById('ds-row-count').textContent = (dataset.row_count || 0).toLocaleString() + ' rows';
+
+  // Build table header — two rows: names and dtypes
+  const thead = document.getElementById('preview-thead');
+  const columns = dataset.columns || [];
+  const nameRow = document.createElement('tr');
+  const dtypeRow = document.createElement('tr');
+  columns.forEach(col => {
+    const th = document.createElement('th');
+    th.className = 'py-2 px-3 font-semibold text-primary uppercase whitespace-nowrap';
+    th.textContent = col.name;
+    nameRow.appendChild(th);
+
+    const td = document.createElement('th');
+    td.className = 'py-1 px-3 font-normal text-[10px] text-on-surface-variant whitespace-nowrap border-b border-outline-variant';
+    td.textContent = col.dtype;
+    dtypeRow.appendChild(td);
+  });
+  thead.appendChild(nameRow);
+  thead.appendChild(dtypeRow);
+
+  // Build table body
+  const tbody = document.getElementById('preview-tbody');
+  const rows = dataset.preview || [];
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-surface-bright transition-colors';
+    columns.forEach(col => {
+      const td = document.createElement('td');
+      td.className = 'py-2 px-3 text-on-surface-variant whitespace-nowrap';
+      const val = row[col.name];
+      td.textContent = val === null || val === undefined ? '—' : String(val);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+})();
+</script>

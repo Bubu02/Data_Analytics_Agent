@@ -165,31 +165,51 @@ async def get_dataset_metrics():
 
 @app.post("/api/v1/dataset/upload", summary="Upload Dataset File")
 async def upload_dataset(file: UploadFile = File(...)):
-    """Receives and validates dataset files (CSV)."""
-    allowed_extensions = {".csv"}
+    """Receives and validates dataset files (CSV, JSON, Parquet)."""
+    allowed_extensions = {".csv", ".json", ".parquet"}
     filename = file.filename or "dataset.csv"
     ext = os.path.splitext(filename)[1].lower()
 
     if ext not in allowed_extensions:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file format '{ext}'. Only CSV is supported for now."
+            detail=f"Unsupported file format '{ext}'. Allowed: CSV, JSON, Parquet."
         )
 
     content = await file.read()
-    
+
     try:
-        df = pd.read_csv(io.BytesIO(content))
+        if ext == ".csv":
+            df = pd.read_csv(io.BytesIO(content))
+        elif ext == ".json":
+            df = pd.read_json(io.BytesIO(content))
+        elif ext == ".parquet":
+            df = pd.read_parquet(io.BytesIO(content))
+        else:
+            raise ValueError(f"Unsupported extension: {ext}")
+
         state.df = df
         state.filename = filename
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to parse file: {str(e)}")
+
+    # Build column metadata
+    columns_meta = [
+        {"name": col, "dtype": str(df[col].dtype)}
+        for col in df.columns
+    ]
+
+    # First 10 rows, converting NaN to None for JSON safety
+    preview_df = df.head(10).where(pd.notnull(df.head(10)), None)
+    preview_rows = preview_df.to_dict(orient="records")
 
     return {
         "status": "success",
         "filename": filename,
-        "rows": len(df),
-        "columns": len(df.columns),
+        "row_count": len(df),
+        "column_count": len(df.columns),
+        "columns": columns_meta,
+        "preview": preview_rows,
         "message": f"Dataset '{filename}' successfully ingested."
     }
 
